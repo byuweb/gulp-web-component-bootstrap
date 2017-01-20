@@ -3,7 +3,6 @@
  */
 
 (function(opts) {
-    console.log(document.currentScript);
     var shadow = !!HTMLElement.prototype.attachShadow;
     var customElements = 'customElements' in window;
 

@@ -22,29 +22,30 @@ module.exports = function bootstrap(options) {
 
 function generateContent(target, polyfill) {
     return `(function(opts) {
-    var shadow = !!HTMLElement.prototype.attachShadow;
-    var customElements = 'customElements' in window;
-
-    if (shadow && customElements) {
-        loadMain();
+    var byu = window.byu = window.byu || {};
+    var comps = byu.webCommunityComponents = byu.webCommunityComponents || {};
+    //You can set window.byu.webCommunityComponents.forcePolyfills to true to always use polyfills.
+    var forcePolyfills = comps.forcePolyfills;
+    //This is here because if we have multiple component bundles on the page and one of them has already loaded the
+    //  polyfills, we would erroneously detect that we don't need to load them and load the native ES6 code instead 
+    //  (which could cause problems).  So, we set 'needsPolyfills' to tell ourselves to ignore the feature detection.
+    var needsPolyfills;
+    if (!'needsPolyfills' in comps) {
+        var shadow = !!HTMLElement.prototype.attachShadow;
+        var customElements = 'customElements' in window;
+        
+        needsPolyfills = comps.needsPolyfills = !shadow || !customElements;
+    }   
+    if (needsPolyfills || forcePolyfills) {
+        load(opts.polyfills);
     } else {
-        loadPolyfills(loadMain);
+        load(opts.main);
     }
-
-    function loadMain() {
+    
+    function load(script) {
         var main = document.createElement('script');
-        main.src = opts.main;
+        main.src = script;
         main.async = true;
-        document.head.appendChild(main);
-    }
-
-    function loadPolyfills(cb) {
-        var main = document.createElement('script');
-        main.src = opts.polyfills;
-        main.async = true;
-        main.addEventListener('load', function() {
-            cb();
-        }, false);
         document.head.appendChild(main);
     }
 })({
