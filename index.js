@@ -18,7 +18,7 @@ module.exports = function bootstrap(options) {
         this.push(file);
         this.push(new Vinyl({
             path: opts.output || 'bootstrap.js',
-            contents: generateContent(opts.main, opts.polyfills)
+            contents: generateContent(opts.noPolyfills, opts.polyfills)
         }));
     });
 };
