@@ -1,6 +1,6 @@
 {
-  "name": "gulp-web-component-bootstrap",
-  "version": "1.0.0",
+  "name": "byu-web-component-loader-generator",
+  "version": "0.1.0",
   "description": "Generates a bootstrap file that ensures that the proper Web Component polyfills are loaded",
   "main": "index.js",
   "scripts": {
@@ -21,8 +21,5 @@
     "jsmin": "^1.0.1",
     "through2": "^2.0.3",
     "vinyl": "^2.0.1"
-  },
-  "peerDependencies": {
-    "gulp": "^3.9.1"
   }
 }
