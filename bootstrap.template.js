@@ -1,3 +1,4 @@
+//<% if (relativeUrls) { %>
 /*
  @license
  This file contains code from https://github.com/JamesMGreene/currentExecutingScript, which is licensed
@@ -25,36 +26,89 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
  */
+//<% } %>
 "use strict";
 (function (opts) {
     var byu = window.byu = window.byu || {};
-    var comps = byu.webCommunityComponents = byu.webCommunityComponents || {};
-    //You can set window.byu.webCommunityComponents.forcePolyfills to true to always use polyfills.
-    var forcePolyfills = comps.forcePolyfills;
-    //This is here because if we have multiple component bundles on the page and one of them has already loaded the
-    //  polyfills, we would erroneously detect that we don't need to load them and load the native ES6 code instead
-    //  (which could cause problems).  So, we set 'needsPolyfills' to tell ourselves to ignore the feature detection.
-    var needsPolyfills;
-    if (!('needsPolyfills' in comps)) {
-        var shadow = !!HTMLElement.prototype.attachShadow;
-        var customElements = 'customElements' in window;
-        needsPolyfills = comps.needsPolyfills = !shadow || !customElements;
-    }
-    if (needsPolyfills || forcePolyfills) {
-        load(opts.polyfills);
+    var comps = byu.webCommunityComponents = window.byu.webCommunityComponents || {};
+    var loading = comps.resourceLoading = comps.resourceLoading || {};
+
+    var bundleToLoad = canDoEs6() ? opts.bundle : opts.compatBundle;
+
+    if (needsPolyfills()) {
+        ensureLoaded(opts.polyfills, function () {
+            ensureLoaded(bundleToLoad);
+        });
     } else {
-        load(opts.noPolyfills);
-    }
-    function load(script) {
-        var baseUrl = scriptBaseUrl();
-        var url = baseUrl + '/' + script;
-        console.log(url);
-        var main = document.createElement('script');
-        main.src = url;
-        main.async = true;
-        document.head.appendChild(main);
+        ensureLoaded(bundleToLoad);
     }
 
+    function ensureLoaded(script, callback) {
+        var resolved = resolveUrl(script);
+        var cb = callback || function () {
+            };
+        var status = loading[resolved];
+        if (status === 'done') {
+            cb();
+        } else if (!status) {
+            loading[resolved] = createLoader(resolved, function () {
+                loading[script] = 'done';
+                cb();
+            });
+        } else if (status instanceof HTMLScriptElement) {
+            status.addEventListener('load', function () {
+                cb();
+            });
+        }
+    }
+
+    function createLoader(script) {
+        var scr = document.createElement('script');
+        scr.src = script;
+        scr.async = true;
+        document.head.appendChild(scr);
+        return scr;
+    }
+
+    function canDoEs6() {
+        try {
+            new Function("class TestClass {}");
+            return true;
+        } catch (e) {
+            return false;
+        }
+    }
+
+    function needsPolyfills() {
+        var forcePolyfills = comps.forcePolyfills;
+        var needsPolyfills;
+
+        //This is here because if we have multiple component bundles on the page and one of them has already loaded the
+        //  polyfills, we would erroneously detect that we don't need to load them and load the native ES6 code instead
+        //  (which could cause problems).  So, we set 'needsPolyfills' to tell ourselves to ignore the feature detection.
+        if (!('needsPolyfills' in comps)) {
+            var shadow = !!HTMLElement.prototype.attachShadow;
+            var customElements = 'customElements' in window;
+            needsPolyfills = comps.needsPolyfills = !shadow || !customElements;
+        }
+        return needsPolyfills || forcePolyfills;
+    }
+
+    var ABSOLUTE_URL_PATTERN = /^https?:\/\/|^\/\//i;
+
+    function resolveUrl(url) {
+//<% if (relativeUrls) { %>
+        if (ABSOLUTE_URL_PATTERN.test(url)) {
+            return url;
+        } else {
+            return scriptBaseUrl() + '/' + url;
+        }
+//<% } else { %>
+        return url;
+//<% } %>
+    }
+
+//<% if (relativeUrls) { %>
     function scriptBaseUrl() {
         var current = currentScriptUrl();
         return current.substring(0, current.lastIndexOf('/'));
@@ -99,7 +153,9 @@
         return url;
     }
     //END:currentExecutingScript
+//<% } %>
 })({
-    noPolyfills: '<%=files.noPolyfills%>',
-    polyfills: '<%=files.polyfills%>'
+    polyfills: 'https://cdn.byu.edu/web-component-polyfills/latest/polyfills.min.js',
+    bundle: 'https://cdn.byu.edu/2017-core-components/latest/components.min.js',
+    compatBundle: 'https://cdn.byu.edu/2017-core-components/latest/components.es5.min.js'
 });
