@@ -1,5 +1,7 @@
 # byu-web-component-loader-generator
 
+[![NPM version][npm-image]][npm-url]
+
 Generates a file that can be used to ensure that Web Component Polyfills
 are loaded before the web components themselves.  Is also capable of
 loading different bundles for browser that support ES6 and those that
@@ -89,3 +91,6 @@ match our needs. Buyer Beware.
 # License
 
 Apache 2.0
+
+[npm-url]: https://www.npmjs.com/package/byu-web-component-loader-generator
+[npm-image]: https://img.shields.io/npm/v/byu-web-component-loader-generator.svg
