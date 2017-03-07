@@ -8,14 +8,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/byuweb/gulp-web-component-bootstrap.git"
+    "url": "git+https://github.com/byuweb/web-component-loader-generator.git"
   },
   "author": "BYU Web Community",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/byuweb/gulp-web-component-bootstrap/issues"
+    "url": "https://github.com/byuweb/web-component-loader-generator/issues"
   },
-  "homepage": "https://github.com/byuweb/gulp-web-component-bootstrap#readme",
+  "homepage": "https://github.com/byuweb/web-component-loader-generator",
   "dependencies": {
     "ejs": "^2.5.5",
     "jsmin": "^1.0.1",
