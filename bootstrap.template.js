@@ -49,7 +49,11 @@
     var comps = byu.webCommunityComponents = window.byu.webCommunityComponents || {};
     var loading = comps.resourceLoading = comps.resourceLoading || {};
 
+<% if(files.compat) { -%>
     var bundleToLoad = canDoEs6() ? opts.bundle : opts.compatBundle;
+<% } else { -%>
+    var bundleToLoad = opts.bundle;
+<% } -%>
 
     if (needsPolyfills()) {
         ensureLoaded(opts.polyfills, function () {
@@ -86,6 +90,7 @@
         return scr;
     }
 
+<% if(files.compat) { -%>
     function canDoEs6() {
         try {
             new Function("class TestClass {}");
@@ -94,6 +99,7 @@
             return false;
         }
     }
+<% } -%>
 
     function needsPolyfills() {
         var forcePolyfills = comps.forcePolyfills;
