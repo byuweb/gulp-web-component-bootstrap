@@ -82,10 +82,11 @@
         }
     }
 
-    function createLoader(script) {
+    function createLoader(script, cb) {
         var scr = document.createElement('script');
         scr.src = script;
         scr.async = true;
+        scr.onload = cb;
         document.head.appendChild(scr);
         return scr;
     }
@@ -116,10 +117,9 @@
         return needsPolyfills || forcePolyfills;
     }
 
-    var ABSOLUTE_URL_PATTERN = /^https?:\/\/|^\/\//i;
-
     function resolveUrl(url) {
 //<% if (relativeUrls) { %>
+        var ABSOLUTE_URL_PATTERN = /^https?:\/\/|^\/\//i;
         if (ABSOLUTE_URL_PATTERN.test(url)) {
             return url;
         } else {
@@ -177,7 +177,7 @@
     //END:currentExecutingScript
 //<% } %>
 })({
-    polyfills: 'https://cdn.byu.edu/web-component-polyfills/latest/polyfills.min.js',
-    bundle: 'https://cdn.byu.edu/2017-core-components/latest/components.min.js',
-    compatBundle: 'https://cdn.byu.edu/2017-core-components/latest/components.es5.min.js'
+    polyfills: '<%= files.polyfills %>',
+    bundle: '<%= files.bundle %>',
+    compatBundle: '<%= files.compat %>'
 });

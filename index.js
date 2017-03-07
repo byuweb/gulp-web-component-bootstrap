@@ -37,14 +37,14 @@ function generateFile(options) {
     if (!options) {
         throw new Error('must specify options');
     }
-    const polyfills = options.polyfillsUrl || DEFAULT_POLYFILLS;
+    const polyfills = options.polyfills || DEFAULT_POLYFILLS;
 
-    const bundle = options.bundleFile;
+    const bundle = options.bundle;
     if (!bundle) throw new Error('must specify a bundle file');
 
     let hasRelative = isRelative(polyfills) || isRelative(bundle);
 
-    const compat = options.compatBundleFile;
+    const compat = options.compatBundle;
 
     if (compat) hasRelative = hasRelative || isRelative(compat);
 
@@ -66,12 +66,17 @@ function generateFile(options) {
 function generateFileStream(options) {
     const through = require('through2');
     const Vinyl = require('vinyl');
+    let written = false;
     return through.obj(function (file, enc, cb) {
+        if (!written) {
+            written = true;
+            this.push(new Vinyl({
+                path: options.output || 'loader.js',
+                contents: generateFile(options)
+            }));
+        }
         this.push(file);
-        this.push(new Vinyl({
-            path: opts.output || 'bootstrap.js',
-            contents: generateFile(options)
-        }));
+        cb();
     });
 }
 
