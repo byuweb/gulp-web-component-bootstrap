@@ -22,7 +22,7 @@ const ejs = require('ejs');
 module.exports = generateFile;
 module.exports.stream = generateFileStream;
 
-const DEFAULT_POLYFILLS = 'https://cdn.byu.edu/web-component-polyfills/latest/webcomponents-lite.js';
+const DEFAULT_POLYFILLS = 'https://cdn.byu.edu/web-component-polyfills/latest/web-component-polyfills.min.js';
 
 const ABSOLUTE_URL_PATTERN = /^https?:\/\/|^\/\//i;
 
