@@ -14,49 +14,21 @@
  *    See the License for the specific language governing permissions and
  *    limitations under the License.
  */
-//<% if (relativeUrls) { %>
-/*
- @license
- This file contains code from https://github.com/JamesMGreene/currentExecutingScript, which is licensed
- under the following license and demarcated with BEGIN:currentExecutingScript and END:currentExecutingScript:
-
- The MIT License (MIT)
-
- Copyright (c) 2014-2015 James M. Greene
-
- Permission is hereby granted, free of charge, to any person obtaining a copy
- of this software and associated documentation files (the "Software"), to deal
- in the Software without restriction, including without limitation the rights
- to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- copies of the Software, and to permit persons to whom the Software is
- furnished to do so, subject to the following conditions:
-
- The above copyright notice and this permission notice shall be included in all
- copies or substantial portions of the Software.
-
- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- SOFTWARE.
- */
-//<% } %>
-"use strict";
 (function (opts) {
+    "use strict";
     var byu = window.byu = window.byu || {};
     var comps = byu.webCommunityComponents = window.byu.webCommunityComponents || {};
     var loading = comps.resourceLoading = comps.resourceLoading || {};
 
-<% if(files.compat) { -%>
-    var bundleToLoad = canDoEs6() ? opts.bundle : opts.compatBundle;
-<% } else { -%>
-    var bundleToLoad = opts.bundle;
-<% } -%>
+    var bundleToLoad;
+    if (opts.compatBundle) {
+        bundleToLoad = canDoEs6() ? opts.bundle : opts.compatBundle;
+    } else {
+        bundleToLoad = opts.bundle;
+    }
 
     if (needsPolyfills()) {
-        ensureLoaded(opts.polyfills, function () {
+        ensureLoaded(comps.polyfillUrl || opts.polyfills, function () {
             ensureLoaded(bundleToLoad);
         });
     } else {
@@ -83,24 +55,22 @@
     }
 
     function createLoader(script, cb) {
-        var scr = document.createElement('script');
-        scr.src = script;
-        scr.async = true;
-        scr.onload = cb;
-        document.head.appendChild(scr);
-        return scr;
+        var loader = document.createElement('script');
+        loader.src = script;
+        loader.async = true;
+        loader.onload = cb;
+        document.head.appendChild(loader);
+        return loader;
     }
 
-<% if(files.compat) { -%>
     function canDoEs6() {
         try {
-            new Function("class TestClass {}");
+            new Function("class TestClass {}"); // jshint ignore:line
             return true;
         } catch (e) {
             return false;
         }
     }
-<% } -%>
 
     function needsPolyfills() {
         var forcePolyfills = comps.forcePolyfills;
@@ -118,65 +88,20 @@
     }
 
     function resolveUrl(url) {
-//<% if (relativeUrls) { %>
         var ABSOLUTE_URL_PATTERN = /^https?:\/\/|^\/\//i;
         if (ABSOLUTE_URL_PATTERN.test(url)) {
             return url;
         } else {
-            return scriptBaseUrl() + '/' + url;
+            return resolveRelative(url);
         }
-//<% } else { %>
-        return url;
-//<% } %>
     }
 
-//<% if (relativeUrls) { %>
-    function scriptBaseUrl() {
-        var current = currentScriptUrl();
-        return current.substring(0, current.lastIndexOf('/'));
+    function resolveRelative(script) {
+        var thisFile = document.querySelector('script[src*=' + opts.loader + ']');
+        return thisFile.src.replace(opts.loader, script);
     }
-
-    function currentScriptUrl() {
-        var stack;
-        try {
-            throw new Error();
-        } catch (e) {
-            stack = e.stack;
-        }
-        return getScriptUrlFromStack(stack);
-    }
-
-    //BEGIN:currentExecutingScript
-    function getScriptUrlFromStack(stack, skipStackDepth) {
-        var matches, remainingStack,
-            url = null,
-            ignoreMessage = typeof skipStackDepth === "number";
-        skipStackDepth = ignoreMessage ? Math.round(skipStackDepth) : 0;
-        if (typeof stack === "string" && stack) {
-            if (ignoreMessage) {
-                matches = stack.match(/(data:text\/javascript(?:;[^,]+)?,.+?|(?:|blob:)(?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
-            }
-            else {
-                matches = stack.match(/^(?:|[^:@]*@|.+\)@(?=data:text\/javascript|blob|http[s]?|file)|.+?\s+(?: at |@)(?:[^:\(]+ )*[\(]?)(data:text\/javascript(?:;[^,]+)?,.+?|(?:|blob:)(?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
-                if (!(matches && matches[1])) {
-                    matches = stack.match(/\)@(data:text\/javascript(?:;[^,]+)?,.+?|(?:|blob:)(?:http[s]?|file):\/\/[\/]?.+?\/[^:\)]*?)(?::\d+)(?::\d+)?/);
-                }
-            }
-            if (matches && matches[1]) {
-                if (skipStackDepth > 0) {
-                    remainingStack = stack.slice(stack.indexOf(matches[0]) + matches[0].length);
-                    url = getScriptUrlFromStack(remainingStack, (skipStackDepth - 1));
-                }
-                else {
-                    url = matches[1];
-                }
-            }
-        }
-        return url;
-    }
-    //END:currentExecutingScript
-//<% } %>
 })({
+    loader: '<%= files.loader %>',
     polyfills: '<%= files.polyfills %>',
     bundle: '<%= files.bundle %>',
     compatBundle: '<%= files.compat %>'

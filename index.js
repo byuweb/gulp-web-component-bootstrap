@@ -23,14 +23,16 @@ module.exports = generateFile;
 module.exports.stream = generateFileStream;
 
 const DEFAULT_POLYFILLS = 'https://cdn.byu.edu/web-component-polyfills/latest/web-component-polyfills.min.js';
-
-const ABSOLUTE_URL_PATTERN = /^https?:\/\/|^\/\//i;
+const DEFAULT_LOADER = 'loader.js';
 
 /**
  * @typedef {{}} Opts
+ * @property {string} output
  * @property {string} [polyfillsUrl]
  * @property {string} bundleFile
+ * @proprety {string} [bundleFileMin]
  * @property {string} compatBundleFile
+ * @property {string} [compatBundleFileMin]
  */
 
 function generateFile(options) {
@@ -42,25 +44,17 @@ function generateFile(options) {
     const bundle = options.bundle;
     if (!bundle) throw new Error('must specify a bundle file');
 
-    let hasRelative = isRelative(polyfills) || isRelative(bundle);
-
     const compat = options.compatBundle;
-
-    if (compat) hasRelative = hasRelative || isRelative(compat);
 
     let template = fs.readFileSync(path.join(__dirname, 'bootstrap.template.js'), {encoding: 'utf8'});
     return Buffer.from(ejs.render(template, {
-        relativeUrls: hasRelative,
         files: {
+            loader: options.output || DEFAULT_LOADER,
             bundle: bundle,
             compat: compat,
             polyfills: polyfills
         }
     }));
-
-    function isRelative(file) {
-        return !ABSOLUTE_URL_PATTERN.test(file);
-    }
 }
 
 function generateFileStream(options) {
@@ -71,7 +65,7 @@ function generateFileStream(options) {
         if (!written) {
             written = true;
             this.push(new Vinyl({
-                path: options.output || 'loader.js',
+                path: options.output || DEFAULT_LOADER,
                 contents: generateFile(options)
             }));
         }
