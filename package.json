@@ -1,6 +1,6 @@
 {
   "name": "byu-web-component-loader-generator",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Generates a bootstrap file that ensures that the proper Web Component polyfills are loaded",
   "main": "index.js",
   "scripts": {
