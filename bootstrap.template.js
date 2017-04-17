@@ -97,7 +97,7 @@
     }
 
     function resolveRelative(script) {
-        var thisFile = document.querySelector('script[src*=' + opts.loader + ']');
+        var thisFile = document.querySelector('script[src$="' + opts.loader + '"]');
         return thisFile.src.replace(opts.loader, script);
     }
 })({
